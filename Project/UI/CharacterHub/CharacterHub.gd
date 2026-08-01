@@ -1,10 +1,10 @@
 extends BaseUIPanel
 class_name CharacterHub
 
-@onready var attributes_tab: Button = $LayoutMargin/Layout/TabList/AttributesTab
-@onready var equipment_tab: Button = $LayoutMargin/Layout/TabList/EquipmentTab
-@onready var skills_tab: Button = $LayoutMargin/Layout/TabList/SkillsTab
-@onready var items_tab: Button = $LayoutMargin/Layout/TabList/ItemsTab
+@onready var attributes_tab: Button = $LayoutMargin/Layout/TabList/Tabs/AttributesTab
+@onready var equipment_tab: Button = $LayoutMargin/Layout/TabList/Tabs/EquipmentTab
+@onready var skills_tab: Button = $LayoutMargin/Layout/TabList/Tabs/SkillsTab
+@onready var items_tab: Button = $LayoutMargin/Layout/TabList/Tabs/ItemsTab
 
 @onready var attributes_page: Control = $LayoutMargin/Layout/PageContainer/AttributesPage
 @onready var equipment_page: Control = $LayoutMargin/Layout/PageContainer/EquipmentPage

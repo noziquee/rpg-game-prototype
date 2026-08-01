@@ -59,57 +59,79 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 25
-theme_override_constants/margin_top = 50
-theme_override_constants/margin_right = 25
-theme_override_constants/margin_bottom = 50
+theme_override_constants/margin_left = 150
+theme_override_constants/margin_top = 200
+theme_override_constants/margin_right = 150
+theme_override_constants/margin_bottom = 200
 
 [node name="Layout" type="HBoxContainer" parent="LayoutMargin" unique_id=1480356040]
 layout_mode = 2
 offset_transform_position = Vector2(1.565, 0)
+alignment = 1
 
-[node name="TabList" type="VBoxContainer" parent="LayoutMargin/Layout" unique_id=1248439038]
-custom_minimum_size = Vector2(250, 0)
+[node name="TabList" type="Control" parent="LayoutMargin/Layout" unique_id=2121418921]
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 
 [node name="Title" type="Label" parent="LayoutMargin/Layout/TabList" unique_id=1031313131]
 custom_minimum_size = Vector2(0, 40)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -125.0
+offset_right = 125.0
+offset_bottom = 40.0
+grow_horizontal = 2
 theme_override_fonts/font = ExtResource("1_7ge61")
 theme_override_font_sizes/font_size = 32
 text = "Backpack"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="AttributesTab" type="Button" parent="LayoutMargin/Layout/TabList" unique_id=1939465036]
+[node name="Tabs" type="VBoxContainer" parent="LayoutMargin/Layout/TabList" unique_id=826304756]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -125.0
+offset_top = 100.0
+offset_right = 125.0
+offset_bottom = 290.0
+grow_horizontal = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="AttributesTab" type="Button" parent="LayoutMargin/Layout/TabList/Tabs" unique_id=1939465036]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_7ge61")
 theme_override_font_sizes/font_size = 28
 text = "Attributes"
 
-[node name="EquipmentTab" type="Button" parent="LayoutMargin/Layout/TabList" unique_id=601168793]
+[node name="EquipmentTab" type="Button" parent="LayoutMargin/Layout/TabList/Tabs" unique_id=601168793]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_7ge61")
 theme_override_font_sizes/font_size = 28
 text = "Equipment"
 
-[node name="SkillsTab" type="Button" parent="LayoutMargin/Layout/TabList" unique_id=301833667]
+[node name="SkillsTab" type="Button" parent="LayoutMargin/Layout/TabList/Tabs" unique_id=301833667]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_7ge61")
 theme_override_font_sizes/font_size = 28
 text = "Skills"
 
-[node name="ItemsTab" type="Button" parent="LayoutMargin/Layout/TabList" unique_id=758338998]
+[node name="ItemsTab" type="Button" parent="LayoutMargin/Layout/TabList/Tabs" unique_id=758338998]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_7ge61")
 theme_override_font_sizes/font_size = 28
 text = "Items"
 
 [node name="PageContainer" type="Control" parent="LayoutMargin/Layout" unique_id=1759051192]
-custom_minimum_size = Vector2(850, 0)
+custom_minimum_size = Vector2(1250, 0)
 layout_mode = 2
 
 [node name="AttributesPage" type="Control" parent="LayoutMargin/Layout/PageContainer" unique_id=468699503]
+visible = false
 layout_mode = 1
 anchors_preset = 0
 
@@ -118,14 +140,19 @@ layout_mode = 1
 
 [node name="EquipmentPage" type="HBoxContainer" parent="LayoutMargin/Layout/PageContainer" unique_id=768856365]
 layout_mode = 1
-offset_right = 1000.0
-offset_bottom = 980.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 70.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
 
 [node name="EquipmentAndWeaponsGrid" parent="LayoutMargin/Layout/PageContainer/EquipmentPage" unique_id=2084216896 instance=ExtResource("3_1qgv4")]
 layout_mode = 2
 
 [node name="InventoryColumn" type="Control" parent="LayoutMargin/Layout/PageContainer/EquipmentPage" unique_id=1419222835]
-custom_minimum_size = Vector2(600, 980)
+custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
 
 [node name="InventoryText" type="Label" parent="LayoutMargin/Layout/PageContainer/EquipmentPage/InventoryColumn" unique_id=1945201289]
@@ -134,8 +161,8 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -170.0
-offset_right = 170.0
+offset_left = -300.0
+offset_right = 300.0
 offset_bottom = 40.0
 grow_horizontal = 2
 theme_override_fonts/font = ExtResource("1_7ge61")
@@ -145,11 +172,16 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="InventoryScrollRoot" parent="LayoutMargin/Layout/PageContainer/EquipmentPage/InventoryColumn" unique_id=1846918466 instance=ExtResource("4_rug7c")]
-custom_minimum_size = Vector2(250, 504)
-layout_mode = 0
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
 offset_top = 44.0
-offset_right = 600.0
-offset_bottom = 44.0
+offset_right = 300.0
+offset_bottom = 680.0
+grow_horizontal = 2
 grid_columns = 0
 
 [node name="ItemStatPanel" parent="LayoutMargin/Layout/PageContainer/EquipmentPage/InventoryColumn" unique_id=1900709615 instance=ExtResource("6_84wve")]
@@ -157,17 +189,19 @@ layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_right = 0.0
-offset_top = -130.0
-offset_right = 340.0
+offset_top = -150.0
+offset_right = 600.0
 grow_horizontal = 1
 grow_vertical = 0
 
 [node name="SkillsPage" type="Control" parent="LayoutMargin/Layout/PageContainer" unique_id=1406089798]
+visible = false
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="ItemsPage" type="Control" parent="LayoutMargin/Layout/PageContainer" unique_id=1557923848]
+visible = false
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0

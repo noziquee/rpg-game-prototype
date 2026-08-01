@@ -7,9 +7,9 @@
 [ext_resource type="PackedScene" uid="uid://qpoj80y8e2r5" path="res://Project/UI/Character/CharacterScreen.tscn" id="5_7r38l"]
 
 [node name="EquipmentPanel" type="VBoxContainer" unique_id=818916105]
-custom_minimum_size = Vector2(250, 0)
-offset_right = 436.0
-offset_bottom = 566.0
+custom_minimum_size = Vector2(500, 0)
+offset_right = 500.0
+offset_bottom = 600.0
 script = ExtResource("1_eod75")
 
 [node name="EquipmentText" type="Label" parent="." unique_id=864936279]
@@ -23,10 +23,11 @@ vertical_alignment = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=286782161]
 layout_mode = 2
+alignment = 1
 
 [node name="LeftCollumn" type="VBoxContainer" parent="HBoxContainer" unique_id=1697539924]
 layout_mode = 2
-alignment = 1
+alignment = 2
 
 [node name="EquipmentSlotUI" parent="HBoxContainer/LeftCollumn" unique_id=1805287938 instance=ExtResource("2_ibx1j")]
 layout_mode = 2
@@ -45,9 +46,10 @@ layout_mode = 2
 
 [node name="CharacterPreview" type="VBoxContainer" parent="HBoxContainer" unique_id=1137513906]
 layout_mode = 2
+alignment = 1
 
 [node name="CharacterScreen" parent="HBoxContainer/CharacterPreview" unique_id=1180754930 instance=ExtResource("5_7r38l")]
-custom_minimum_size = Vector2(300, 300)
+custom_minimum_size = Vector2(300, 350)
 layout_mode = 2
 
 [node name="PlayerNameText" type="Label" parent="HBoxContainer/CharacterPreview" unique_id=722046750]
@@ -60,7 +62,7 @@ vertical_alignment = 1
 
 [node name="RightCollumn" type="VBoxContainer" parent="HBoxContainer" unique_id=1240166234]
 layout_mode = 2
-alignment = 1
+alignment = 2
 
 [node name="EquipmentSlotUI" parent="HBoxContainer/RightCollumn" unique_id=647430669 instance=ExtResource("2_ibx1j")]
 layout_mode = 2

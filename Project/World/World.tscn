@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://cdff7qoxrslkx" path="res://Project/World/Chest.tscn" id="4_eue43"]
 [ext_resource type="PackedScene" uid="uid://d4bcsx26ymp38" path="res://Project/Characters/Scenes_Character/Enemy.tscn" id="5_o14yy"]
 [ext_resource type="PackedScene" uid="uid://cs7yoatek8jnu" path="res://Project/Characters/Scenes_Character/SkeletonArcher.tscn" id="7_2ua4a"]
+[ext_resource type="Resource" uid="uid://bll0opuvo68tk" path="res://Project/Items/Accessories/Item_SprintShoes.tres" id="7_ic4or"]
 [ext_resource type="PackedScene" uid="uid://c01nirneon10h" path="res://Project/UI/Feedback/DamageNumberSpawner.tscn" id="9_gwcue"]
 [ext_resource type="PackedScene" uid="uid://cxa5bhd30h8bh" path="res://Project/UI/HUD/MainHUD.tscn" id="9_yhhn6"]
 [ext_resource type="Script" uid="uid://dnaq051yd1kdj" path="res://Project/UI/Inventory/ItemUsageSystem.gd" id="10_gwcue"]
@@ -53,7 +54,7 @@ navigation_mesh = SubResource("NavigationMesh_g3r0j")
 
 [node name="Chest" parent="NavigationRegion3D" unique_id=1541842573 instance=ExtResource("4_eue43")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.412642, 0.24353147, 7.7174945)
-loot = Array[ExtResource("3_urojf")]([ExtResource("17_v3ot7"), ExtResource("15_b561u"), ExtResource("15_b561u"), ExtResource("16_urojf")])
+loot = Array[ExtResource("3_urojf")]([ExtResource("17_v3ot7"), ExtResource("15_b561u"), ExtResource("15_b561u"), ExtResource("16_urojf"), ExtResource("7_ic4or")])
 
 [node name="Enemy" parent="." unique_id=1692040955 instance=ExtResource("5_o14yy")]
 transform = Transform3D(0.99961436, -0.027769044, 0, 0.027769044, 0.99961436, 0, 0, 0, 1, 5.687243, 0, -7.1346583)

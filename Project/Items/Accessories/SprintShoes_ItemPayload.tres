@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ItemPayload" format=3 uid="uid://d0pet48w6m1ic"]
+
+[ext_resource type="Script" uid="uid://ddo55xhd34iap" path="res://Project/Equipment/Items/Payloads/ItemPayload.gd" id="1_v3fol"]
+
+[resource]
+script = ExtResource("1_v3fol")
+metadata/_custom_type_script = "uid://ddo55xhd34iap"

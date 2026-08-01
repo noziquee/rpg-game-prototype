@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemDefinition" format=3 uid="uid://bll0opuvo68tk"]
+
+[ext_resource type="Script" uid="uid://b6ia87gxo0r2d" path="res://Project/Equipment/Items/ItemDefinition.gd" id="1_2e8qv"]
+[ext_resource type="Texture2D" uid="uid://cud8rqdl7q74o" path="res://Assets/BHLegacy/BHLegacy_Accessory_Icons.png" id="1_cgm51"]
+[ext_resource type="Resource" uid="uid://d0pet48w6m1ic" path="res://Project/Items/Accessories/SprintShoes_ItemPayload.tres" id="2_4tu5m"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k3j8m"]
+atlas = ExtResource("1_cgm51")
+region = Rect2(512, 0, 128, 128)
+
+[resource]
+script = ExtResource("1_2e8qv")
+category = 2
+payload = ExtResource("2_4tu5m")
+icon = SubResource("AtlasTexture_k3j8m")
+display_name = "Sprint Shoes"
+description = "Comfy footwear for running long distances."
+value = 50
+weight = 4.0
+metadata/_custom_type_script = "uid://b6ia87gxo0r2d"
