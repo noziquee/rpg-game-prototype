@@ -2,8 +2,10 @@
 
 [ext_resource type="FontFile" uid="uid://dr0wjqhjvc0r0" path="res://Assets/Font/Baar Zeitgeist.ttf" id="1_7ge61"]
 [ext_resource type="Script" uid="uid://d1fyeb6vcxjst" path="res://Project/UI/CharacterHub/CharacterHub.gd" id="1_rug7c"]
+[ext_resource type="Theme" uid="uid://b61io2m4i6vn3" path="res://Project/UI/Themes/GameTheme.tres" id="1_vtdvr"]
 [ext_resource type="Shader" uid="uid://ue6ryiltfguj" path="res://Assets/Shader/Blur.gdshader" id="2_osv55"]
 [ext_resource type="PackedScene" uid="uid://b0ad3wqxiid28" path="res://Project/UI/Equipment/EquipmentPanel.tscn" id="3_1qgv4"]
+[ext_resource type="StyleBox" uid="uid://cdfyla4wn12ai" path="res://Project/UI/Themes/Styles/Inventory_Slot_Style.tres" id="3_vsdy6"]
 [ext_resource type="PackedScene" uid="uid://c5nq711moy2rk" path="res://Project/UI/Character/CharacterStatsPanel.tscn" id="4_osv55"]
 [ext_resource type="PackedScene" uid="uid://bvwhqbbs7plhy" path="res://Project/UI/Inventory/InventoryPanel.tscn" id="4_rug7c"]
 [ext_resource type="PackedScene" uid="uid://3shhwdgweewn" path="res://Project/UI/CharacterHub/ItemStatPanel.tscn" id="6_84wve"]
@@ -25,6 +27,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_vtdvr")
 script = ExtResource("1_rug7c")
 
 [node name="Background" type="TextureRect" parent="." unique_id=400658008]
@@ -63,6 +66,10 @@ theme_override_constants/margin_left = 150
 theme_override_constants/margin_top = 200
 theme_override_constants/margin_right = 150
 theme_override_constants/margin_bottom = 200
+
+[node name="PanelContainer" type="PanelContainer" parent="LayoutMargin" unique_id=1274587745]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("3_vsdy6")
 
 [node name="Layout" type="HBoxContainer" parent="LayoutMargin" unique_id=1480356040]
 layout_mode = 2
@@ -104,25 +111,27 @@ alignment = 1
 
 [node name="AttributesTab" type="Button" parent="LayoutMargin/Layout/TabList/Tabs" unique_id=1939465036]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_7ge61")
+theme_type_variation = &"TabButton"
 theme_override_font_sizes/font_size = 28
 text = "Attributes"
 
 [node name="EquipmentTab" type="Button" parent="LayoutMargin/Layout/TabList/Tabs" unique_id=601168793]
 layout_mode = 2
+theme_type_variation = &"TabButton"
 theme_override_fonts/font = ExtResource("1_7ge61")
 theme_override_font_sizes/font_size = 28
 text = "Equipment"
 
 [node name="SkillsTab" type="Button" parent="LayoutMargin/Layout/TabList/Tabs" unique_id=301833667]
 layout_mode = 2
+theme_type_variation = &"TabButton"
 theme_override_fonts/font = ExtResource("1_7ge61")
 theme_override_font_sizes/font_size = 28
 text = "Skills"
 
 [node name="ItemsTab" type="Button" parent="LayoutMargin/Layout/TabList/Tabs" unique_id=758338998]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_7ge61")
+theme_type_variation = &"TabButton"
 theme_override_font_sizes/font_size = 28
 text = "Items"
 
@@ -172,7 +181,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="InventoryScrollRoot" parent="LayoutMargin/Layout/PageContainer/EquipmentPage/InventoryColumn" unique_id=1846918466 instance=ExtResource("4_rug7c")]
-custom_minimum_size = Vector2(600, 0)
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -180,7 +188,7 @@ anchor_right = 0.5
 offset_left = -300.0
 offset_top = 44.0
 offset_right = 300.0
-offset_bottom = 680.0
+offset_bottom = 654.0
 grow_horizontal = 2
 grid_columns = 0
 

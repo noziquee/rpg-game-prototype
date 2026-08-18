@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://dhq8edr62edtq"]
 
+[ext_resource type="StyleBox" uid="uid://ck586vmfajrl2" path="res://Project/UI/Themes/Styles/Equipment_Slot_Style.tres" id="1_af8jh"]
 [ext_resource type="Script" uid="uid://dag1g6xq7ktse" path="res://Project/UI/Equipment/EquipmentSlotUI.gd" id="1_wpw4b"]
 [ext_resource type="FontFile" uid="uid://dr0wjqhjvc0r0" path="res://Assets/Font/Baar Zeitgeist.ttf" id="2_b3kh8"]
 
@@ -7,6 +8,7 @@
 custom_minimum_size = Vector2(64, 64)
 offset_right = 1.0
 offset_bottom = 23.0
+theme_override_styles/panel = ExtResource("1_af8jh")
 script = ExtResource("1_wpw4b")
 
 [node name="Icon" type="TextureRect" parent="." unique_id=953630522]

@@ -29,3 +29,8 @@ text = "stats"
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_tmfc6")
 text = "description"
+
+[node name="EquipButton" type="Button" parent="VBox" unique_id=1445150047]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_tmfc6")
+text = "Equip"

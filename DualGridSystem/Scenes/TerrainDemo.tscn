@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://dkqlioyrq08px"]
+
+[ext_resource type="Script" uid="uid://ccyyb6shv2yvv" path="res://DualGridSystem/DualGridRenderer.gd" id="1_1cby5"]
+[ext_resource type="Script" uid="uid://bstapgvhswc6v" path="res://DualGridSystem/EditorCameraController.gd" id="2_ps1jx"]
+
+[node name="TerrainDemo" type="Node3D" unique_id=1179399234]
+
+[node name="DualGridRenderer" type="Node3D" parent="." unique_id=112575770]
+script = ExtResource("1_1cby5")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=971344647]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, -30, 0)
+
+[node name="CameraRig" type="Node3D" parent="." unique_id=490204336]
+script = ExtResource("2_ps1jx")
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig" unique_id=862022437]
+transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 8, 14, 16)

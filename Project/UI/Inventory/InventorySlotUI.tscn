@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bdyjrg14m7e57"]
 
 [ext_resource type="Script" uid="uid://38f4x0r31e0o" path="res://Project/UI/Inventory/InventorySlotUI.gd" id="1_7shkf"]
+[ext_resource type="StyleBox" uid="uid://cdfyla4wn12ai" path="res://Project/UI/Themes/Styles/Inventory_Slot_Style.tres" id="1_j8w5s"]
 [ext_resource type="Texture2D" uid="uid://3noypuing3ew" path="res://Assets/UI/itemSlot1_gray.png" id="2_avwv7"]
 [ext_resource type="FontFile" uid="uid://dr0wjqhjvc0r0" path="res://Assets/Font/Baar Zeitgeist.ttf" id="2_y1gdb"]
 
@@ -8,6 +9,7 @@
 custom_minimum_size = Vector2(64, 64)
 offset_right = 64.0
 offset_bottom = 64.0
+theme_override_styles/panel = ExtResource("1_j8w5s")
 script = ExtResource("1_7shkf")
 
 [node name="NinePatchRect" type="NinePatchRect" parent="." unique_id=414130436]

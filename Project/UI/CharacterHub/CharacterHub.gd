@@ -25,6 +25,10 @@ func _ready() -> void:
 	layer = UILayerType.Id.SCREEN
 	super._ready()
 
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	panel_opened.connect(func(): get_tree().paused = true)
+	panel_closed.connect(func(): get_tree().paused = false)
+
 	UIManager.register_panel("character_hub", self)
 
 	var character := CharacterRef.get_player()
@@ -33,9 +37,13 @@ func _ready() -> void:
 	equipment_panel.setup(character)
 	inventory_panel.setup(character)
 	attributes_panel.setup(character)
+	item_stat_panel.setup(character)
 
-	equipment_panel.item_info_requested.connect(item_stat_panel.show_item_info)
-	inventory_panel.item_info_requested.connect(item_stat_panel.show_item_info)
+	equipment_panel.item_info_requested.connect(item_stat_panel.show_equipped_item)
+	inventory_panel.item_info_requested.connect(item_stat_panel.show_inventory_item)
+
+	inventory_panel.item_info_requested.connect(func(_slot): equipment_panel.clear_selection())
+	equipment_panel.item_info_requested.connect(func(_item, _slot, _is_weapon): inventory_panel.clear_selection())
 
 	_pages = [attributes_page, equipment_page, skills_page, items_page]
 
@@ -44,7 +52,7 @@ func _ready() -> void:
 	skills_tab.pressed.connect(func(): _select_page(skills_page))
 	items_tab.pressed.connect(func(): _select_page(items_page))
 
-	_select_page(equipment_page)   # default tab on open
+	_select_page(equipment_page)
 
 	if not InputMap.has_action("toggle_character_hub"):
 		InputMap.add_action("toggle_character_hub")

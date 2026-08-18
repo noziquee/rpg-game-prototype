@@ -15,6 +15,7 @@ payload = ExtResource("2_w1yum")
 icon = SubResource("AtlasTexture_w46we")
 display_name = "Iron Breastplate"
 description = "Iron armor"
+rarity = 1
 value = 50
 weight = 4.0
 metadata/_custom_type_script = "uid://b6ia87gxo0r2d"

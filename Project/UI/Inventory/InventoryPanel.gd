@@ -1,17 +1,22 @@
 extends Control
 class_name InventoryPanel
 
-signal item_info_requested(name: String, description: String, stat_lines: PackedStringArray)
+signal item_info_requested(slot: InventorySlot)
 
+@onready var tab_bar: InventoryTabBar = $VBoxContainer/TabBar
 @onready var grid: GridContainer = $VBoxContainer/ScrollContainer/ItemGrid
-@onready var weight_label: Label = $VBoxContainer/Weight
 
 @export var inventory_slot_scene: PackedScene
 @export var grid_columns: int = 5
 
 var character: Character
 var inventory_component: InventoryComponent
-var selected_item: ItemDefinition
+var weapon_component: WeaponComponent
+var equipment_component: EquipmentComponent
+var selected_slot: InventorySlot
+var current_filter: int = -1  # -1 = All
+
+var _slot_uis: Array = []
 
 func setup(bound_character: Character) -> void:
 
@@ -21,39 +26,60 @@ func setup(bound_character: Character) -> void:
 		return
 
 	inventory_component = character.context.inventory
+	weapon_component = character.context.weapon
+	equipment_component = character.context.equipment
+
 	inventory_component.inventory_changed.connect(_on_inventory_changed)
+	tab_bar.filter_selected.connect(_on_filter_selected)
 
 	grid.columns = grid_columns
 	_populate_inventory()
-	_update_capacity_display()
+	
+func clear_selection() -> void:
+	selected_slot = null
+	for slot_ui in _slot_uis:
+		slot_ui.set_selected(false)
+
+func _on_filter_selected(category: int) -> void:
+	current_filter = category
+	_populate_inventory()
 
 func _populate_inventory() -> void:
 	for child in grid.get_children():
 		child.queue_free()
+	_slot_uis.clear()
 
 	for slot in inventory_component.get_all_slots():
 		var item := slot.item as ItemDefinition
 		if item == null:
 			continue
 
+		if current_filter != -1 and item.category != current_filter:
+			continue
+
 		var slot_ui = inventory_slot_scene.instantiate()
 		grid.add_child(slot_ui)
-		slot_ui.set_item(item, slot.quantity)
-		slot_ui.item_selected.connect(func(): _on_item_selected(item))
-		slot_ui.item_activated.connect(func(): _on_item_activated(item))
+		slot_ui.set_slot(slot)
+		slot_ui.set_selected(slot == selected_slot)
+		slot_ui.item_selected.connect(func(): _on_item_selected(slot))
+		slot_ui.item_activated.connect(func(): _on_item_activated(slot))
+		_slot_uis.append(slot_ui)
 
-func _on_item_activated(item: ItemDefinition) -> void:
+func _on_item_activated(slot: InventorySlot) -> void:
 
 	if character == null or character.context == null:
 		return
 
-	if item.category == ItemCategory.Id.WEAPON and character.context.weapon:
-		var weapon_payload := item.payload as WeaponPayload
-		var slot := weapon_payload.weapon_slot if weapon_payload else WeaponSlot.Id.MAIN_HAND
-		character.context.weapon.equip(item, slot)
+	var item := slot.item as ItemDefinition
+	if item == null:
+		return
 
-	elif (item.category == ItemCategory.Id.ARMOR or item.category == ItemCategory.Id.ACCESSORY) and character.context.equipment:
-		character.context.equipment.equip(item)
+	var equippable := item.category == ItemCategory.Id.WEAPON \
+		or item.category == ItemCategory.Id.ARMOR \
+		or item.category == ItemCategory.Id.ACCESSORY
+
+	if equippable:
+		EquipHelper.equip_from_inventory(item, slot, inventory_component, weapon_component, equipment_component)
 
 	elif item.consumable:
 		if item.heal_amount > 0.0 and character.context.health:
@@ -62,13 +88,11 @@ func _on_item_activated(item: ItemDefinition) -> void:
 			character.context.resources.restore(item.restore_resource_type, item.restore_amount)
 		inventory_component.remove_item(item, 1)
 
-func _on_item_selected(item: ItemDefinition) -> void:
-	selected_item = item
-	item_info_requested.emit(item.display_name, item.description, PackedStringArray())
+func _on_item_selected(slot: InventorySlot) -> void:
+	selected_slot = slot
+	for slot_ui in _slot_uis:
+		slot_ui.set_selected(slot_ui.slot == slot)
+	item_info_requested.emit(slot)
 
 func _on_inventory_changed() -> void:
 	_populate_inventory()
-	_update_capacity_display()
-
-func _update_capacity_display() -> void:
-	weight_label.text = "Slots: %d/%d" % [inventory_component.get_all_slots().size(), inventory_component.max_slots]

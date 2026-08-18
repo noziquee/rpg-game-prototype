@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c2dymrmp1desd"]
+
+[ext_resource type="Script" uid="uid://dmmlnht5gn8vk" path="res://DualGridSystem/WfcTestRunner.gd" id="1_aj4f0"]
+
+[node name="WfcTestDemo" type="Node" unique_id=979188160]
+script = ExtResource("1_aj4f0")
