@@ -20,6 +20,7 @@
 [ext_resource type="Resource" uid="uid://bqhijrol0ngmk" path="res://Project/Items/Armor/IronArmorSet/Resources_Equipment/Item_IronHelmet.tres" id="17_v3ot7"]
 [ext_resource type="PackedScene" uid="uid://j5bx5eqbop1a" path="res://Project/Items/Armor/IronArmorSet/Scenes/IronBreastplate_WorldItem.tscn" id="18_urojf"]
 [ext_resource type="PackedScene" uid="uid://c61o0fc6amqo0" path="res://Project/Items/Armor/IronArmorSet/Scenes/IronBoots_WorldItem.tscn" id="19_v3ot7"]
+[ext_resource type="Script" uid="uid://y572gtm01voo" path="res://DualGridSystem/StalbergWorldTerrain.gd" id="21_5vnkj"]
 
 [sub_resource type="Environment" id="Environment_tw2g7"]
 
@@ -80,6 +81,7 @@ metadata/_custom_type_script = "uid://dnaq051yd1kdj"
 
 [node name="Ground" type="StaticBody3D" parent="." unique_id=450490487]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+visible = false
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="Ground" unique_id=527645108]
 mesh = SubResource("BoxMesh_2nri0")
@@ -101,3 +103,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 3, 14)
 
 [node name="IronBoots" parent="." unique_id=1165152549 instance=ExtResource("19_v3ot7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.360828, 3.7017813, 14.396609)
+
+[node name="StalbergWorldTerrain" type="Node3D" parent="." unique_id=462915181]
+script = ExtResource("21_5vnkj")
+hex_radius = 2
+relax_iterations = 5
+world_radius = 3

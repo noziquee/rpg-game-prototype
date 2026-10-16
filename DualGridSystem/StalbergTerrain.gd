@@ -44,14 +44,19 @@ func _render_all_quads() -> void:
 
 func _update_quad(quad_index: int) -> void:
 	var quad: PackedInt32Array = grid.quads[quad_index]
-	var bitmask := 0
-	if grid.land.get(quad[0], "water") != "water": bitmask |= TileLibrary.TL
-	if grid.land.get(quad[1], "water") != "water": bitmask |= TileLibrary.TR
-	if grid.land.get(quad[2], "water") != "water": bitmask |= TileLibrary.BR
-	if grid.land.get(quad[3], "water") != "water": bitmask |= TileLibrary.BL
-	
+
+	var bitmask := _get_tile_bitmask(grid, quad)
+
+	# IMPORTANT:
+	# Boundary quads are visually treated differently.
+	bitmask = _apply_boundary_shape(grid, quad, bitmask)
+
 	var tile_info := TileLibrary.get_tile(bitmask)
 	var mesh_instance: MeshInstance3D = _quad_nodes[quad_index]
+
+	if tile_info["mesh"] == null:
+		mesh_instance.mesh = null
+		return
 
 	if enable_deformation:
 		mesh_instance.mesh = TileDeformer.deform_mesh(
@@ -62,13 +67,25 @@ func _update_quad(quad_index: int) -> void:
 			grid.points[quad[2]],
 			grid.points[quad[3]]
 		)
+
 		mesh_instance.position = Vector3.ZERO
 		mesh_instance.rotation = Vector3.ZERO
+
 	else:
-		var centroid: Vector3 = (grid.points[quad[0]] + grid.points[quad[1]] + grid.points[quad[2]] + grid.points[quad[3]]) / 4.0
+		var centroid: Vector3 = (
+			grid.points[quad[0]]
+			+ grid.points[quad[1]]
+			+ grid.points[quad[2]]
+			+ grid.points[quad[3]]
+		) / 4.0
+
 		mesh_instance.mesh = tile_info["mesh"]
 		mesh_instance.position = centroid
-		mesh_instance.rotation = Vector3(0, tile_info["turns"] * -PI / 2.0, 0)
+		mesh_instance.rotation = Vector3(
+			0,
+			tile_info["turns"] * -PI / 2.0,
+			0
+		)
 
 func _build_debug_grid() -> void:
 	var mesh_instance := MeshInstance3D.new()
@@ -115,3 +132,97 @@ func _unhandled_input(event: InputEvent) -> void:
 	grid.land[point_id] = "Forest" if event.button_index == MOUSE_BUTTON_LEFT else "water"
 	for quad_index in _point_to_quads.get(point_id, []):
 		_update_quad(quad_index)
+
+func _get_tile_bitmask(
+	grid: StalbergGrid,
+	quad: PackedInt32Array
+) -> int:
+
+	var bitmask := 0
+
+	if grid.land.get(quad[0], "water") != "water":
+		bitmask |= TileLibrary.TL
+
+	if grid.land.get(quad[1], "water") != "water":
+		bitmask |= TileLibrary.TR
+
+	if grid.land.get(quad[2], "water") != "water":
+		bitmask |= TileLibrary.BR
+
+	if grid.land.get(quad[3], "water") != "water":
+		bitmask |= TileLibrary.BL
+
+	return bitmask
+
+func _apply_boundary_shape(
+	grid: StalbergGrid,
+	quad: PackedInt32Array,
+	bitmask: int
+) -> int:
+
+	var boundary_edges: Array = grid.get_boundary_edges_for_quad(quad)
+
+	# Interior quad.
+	if boundary_edges.is_empty():
+		return bitmask
+
+	# ----------------------------------------------------------
+	# Outer boundary
+	# ----------------------------------------------------------
+	#
+	# If the quad is on the outer border, don't allow a Full
+	# tile. We want the Half Edge / Half Corner silhouette.
+	#
+	# One boundary edge = Edge.
+	# Two boundary edges = Corner.
+	#
+
+	if boundary_edges.size() == 1:
+		match boundary_edges[0]:
+
+			0:
+				# TL -> TR
+				return TileLibrary.TL | TileLibrary.TR
+
+			1:
+				# TR -> BR
+				return TileLibrary.TR | TileLibrary.BR
+
+			2:
+				# BR -> BL
+				return TileLibrary.BR | TileLibrary.BL
+
+			3:
+				# BL -> TL
+				return TileLibrary.BL | TileLibrary.TL
+
+	if boundary_edges.size() >= 2:
+		return _get_boundary_corner_bitmask(boundary_edges)
+
+	return bitmask
+
+func _get_boundary_corner_bitmask(boundary_edges: Array) -> int:
+
+	var has_top := boundary_edges.has(0)
+	var has_right := boundary_edges.has(1)
+	var has_bottom := boundary_edges.has(2)
+	var has_left := boundary_edges.has(3)
+
+	# Top + Left
+	if has_top and has_left:
+		return TileLibrary.TL
+
+	# Top + Right
+	if has_top and has_right:
+		return TileLibrary.TR
+
+	# Bottom + Right
+	if has_bottom and has_right:
+		return TileLibrary.BR
+
+	# Bottom + Left
+	if has_bottom and has_left:
+		return TileLibrary.BL
+
+	# Fallback
+	return TileLibrary.TL

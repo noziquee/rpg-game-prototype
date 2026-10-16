@@ -4,12 +4,17 @@ extends Node3D
 @export var cell_size: float = 2.0
 @export var relax_iterations: int = 10
 @export var relax_strength: float = 0.5
-@export var world_radius: int = 1       # rings of patches around the center patch
+@export var world_radius: int = 1       # rings of sectors around the center sector
 @export var enable_deformation: bool = true
 
-var world: StalbergWorld
-var _quad_nodes: Dictionary = {}       # Vector2i patch_coord -> Array[MeshInstance3D]
-var _point_to_quads: Dictionary = {}   # Vector2i patch_coord -> Dictionary(point_id -> Array[int])
+@export var enable_biome_bleeding: bool = false
+@export var bleed_width: float = 3.0
+@export var bleed_noise_frequency: float = 0.15
+
+var grid: StalbergGrid
+var sector_map: HexSectorMap
+var _quad_nodes: Array = []            # Array[MeshInstance3D], index matches grid.quads
+var _point_to_quads: Dictionary = {}   # int point_id -> Array[int] quad indices
 
 const WFC_RULES := {
 	"water": ["water", "Forest"],
@@ -18,69 +23,72 @@ const WFC_RULES := {
 	"Snow": ["Forest", "Snow"],
 }
 
+const PATCH_WEIGHTS := {
+	"water": 6.0,
+	"Forest": 2.0,
+	"Desert": 1.0,
+	"Snow": 1.0,
+}
+
+const GUARANTEED_BIOMES := ["Forest", "Desert", "Snow"]
+
 func _ready() -> void:
-	var patch_coords := _generate_patch_coords(world_radius)
+	var total_radius := world_radius * hex_radius
 
-	world = StalbergWorld.new()
-	world.generate(patch_coords, hex_radius, cell_size, relax_iterations, relax_strength)
+	grid = StalbergGrid.new()
+	grid.generate(total_radius, cell_size, relax_iterations, relax_strength)
 
-	var graph := world.build_point_graph()
-	var solver := WfcGraphSolver.new(WFC_RULES)
-	var success: bool = solver.solve(graph["node_ids"], graph["adjacency"])
-	if success:
-		_apply_wfc_result(solver.result, graph["node_members"])
-		print("WFC solved: ", graph["node_ids"].size(), " points")
+	sector_map = HexSectorMap.new()
+	sector_map.build(grid, world_radius, hex_radius, cell_size)
+
+	var sector_adjacency := sector_map.get_adjacency()
+	var patch_solver := WfcGraphSolver.new(WFC_RULES, PATCH_WEIGHTS)
+	var forced_seeds := _pick_guaranteed_seeds(sector_map.sector_coords, sector_adjacency)
+	var patch_success: bool = patch_solver.solve(sector_map.sector_coords, sector_adjacency, forced_seeds)
+	var patch_biomes: Dictionary = {}
+	if patch_success:
+		patch_biomes = patch_solver.result
+		print("Sector WFC solved: ", sector_map.sector_coords.size(), " sectors")
 	else:
-		push_error("StalbergWorldTerrain: WFC failed to find a solution, world will render as all-water")
+		push_error("StalbergWorldTerrain: sector-level WFC failed, defaulting every sector to Forest")
+		for coord in sector_map.sector_coords:
+			patch_biomes[coord] = "Forest"
 
-	for coord in patch_coords:
-		_build_point_quad_map(coord)
-		_render_patch(coord)
+	if enable_biome_bleeding:
+		var bleed_noise := FastNoiseLite.new()
+		bleed_noise.seed = randi()
+		bleed_noise.frequency = bleed_noise_frequency
+		BiomeBleeder.apply(grid, sector_map, patch_biomes, bleed_width, bleed_noise)
+	else:
+		_assign_flat_biomes(patch_biomes)
+
+	_build_point_quad_map()
+	_render_all_quads()
 	_build_debug_grid()
 
-func _apply_wfc_result(result: Dictionary, node_members: Dictionary) -> void:
-	for canon in result.keys():
-		var tag: String = result[canon]
-		for member_key in node_members[canon]:
-			var parts: PackedStringArray = member_key.split(":")
-			var coord_parts: PackedStringArray = parts[0].split(",")
-			var coord := Vector2i(int(coord_parts[0]), int(coord_parts[1]))
-			var point_id := int(parts[1])
-			world.patches[coord].land[point_id] = tag
-			
-func _generate_patch_coords(radius: int) -> Array:
-	var coords: Array = []
-	for q in range(-radius, radius + 1):
-		for r in range(-radius, radius + 1):
-			if abs(q) + abs(q + r) + abs(r) <= radius * 2:
-				coords.append(Vector2i(q, r))
-	return coords
+func _assign_flat_biomes(patch_biomes: Dictionary) -> void:
+	for pid in grid.points.keys():
+		var coord: Vector2i = sector_map.point_sector[pid]
+		grid.land[pid] = patch_biomes.get(coord, "Forest")
 
-func _build_point_quad_map(coord: Vector2i) -> void:
-	var grid: StalbergGrid = world.patches[coord]
-	var map: Dictionary = {}
+func _build_point_quad_map() -> void:
+	_point_to_quads.clear()
 	for i in range(grid.quads.size()):
 		var quad: PackedInt32Array = grid.quads[i]
 		for pid in quad:
-			if not map.has(pid):
-				map[pid] = []
-			map[pid].append(i)
-	_point_to_quads[coord] = map
+			if not _point_to_quads.has(pid):
+				_point_to_quads[pid] = []
+			_point_to_quads[pid].append(i)
 
-func _render_patch(coord: Vector2i) -> void:
-	var grid: StalbergGrid = world.patches[coord]
-	var nodes: Array = []
-	nodes.resize(grid.quads.size())
+func _render_all_quads() -> void:
+	_quad_nodes.resize(grid.quads.size())
 	for i in range(grid.quads.size()):
 		var mesh_instance := MeshInstance3D.new()
 		add_child(mesh_instance)
-		nodes[i] = mesh_instance
-	_quad_nodes[coord] = nodes
-	for i in range(grid.quads.size()):
-		_update_quad(coord, i)
+		_quad_nodes[i] = mesh_instance
+		_update_quad(i)
 
-func _update_quad(coord: Vector2i, quad_index: int) -> void:
-	var grid: StalbergGrid = world.patches[coord]
+func _update_quad(quad_index: int) -> void:
 	var quad: PackedInt32Array = grid.quads[quad_index]
 	var tags: Array = [
 		grid.land.get(quad[0], "water"),
@@ -88,15 +96,22 @@ func _update_quad(coord: Vector2i, quad_index: int) -> void:
 		grid.land.get(quad[2], "water"),
 		grid.land.get(quad[3], "water"),
 	]
-	var bitmask := 0
-	if tags[0] != "water": bitmask |= TileLibrary.TL
-	if tags[1] != "water": bitmask |= TileLibrary.TR
-	if tags[2] != "water": bitmask |= TileLibrary.BR
-	if tags[3] != "water": bitmask |= TileLibrary.BL
-
 	var biome := _pick_quad_biome(tags)
+
+	var bitmask := 0
+	if biome != "water" and tags[0] == biome: bitmask |= TileLibrary.TL
+	if biome != "water" and tags[1] == biome: bitmask |= TileLibrary.TR
+	if biome != "water" and tags[2] == biome: bitmask |= TileLibrary.BR
+	if biome != "water" and tags[3] == biome: bitmask |= TileLibrary.BL
+
+	bitmask = _apply_world_edge_shape(quad, bitmask)
+
 	var tile_info := TileLibrary.get_tile(bitmask, biome)
-	var mesh_instance: MeshInstance3D = _quad_nodes[coord][quad_index]
+	var mesh_instance: MeshInstance3D = _quad_nodes[quad_index]
+
+	if tile_info["mesh"] == null:
+		mesh_instance.mesh = null
+		return
 
 	if enable_deformation:
 		mesh_instance.mesh = TileDeformer.deform_mesh(
@@ -129,6 +144,43 @@ func _pick_quad_biome(tags: Array) -> String:
 			best_tag = tag
 	return best_tag
 
+func _apply_world_edge_shape(quad: PackedInt32Array, bitmask: int) -> int:
+	# Only taper a quad that would otherwise render as a solid Full block.
+	# A quad that's already partial (a real biome/water transition) is left
+	# alone — it already reflects the actual data.
+	var full := TileLibrary.TL | TileLibrary.TR | TileLibrary.BR | TileLibrary.BL
+	if bitmask != full:
+		return bitmask
+
+	var boundary_edges: Array = grid.get_boundary_edges_for_quad(quad)
+	if boundary_edges.is_empty():
+		return bitmask
+
+	if boundary_edges.size() == 1:
+		match boundary_edges[0]:
+			0: return TileLibrary.TL | TileLibrary.TR
+			1: return TileLibrary.TR | TileLibrary.BR
+			2: return TileLibrary.BR | TileLibrary.BL
+			3: return TileLibrary.BL | TileLibrary.TL
+
+	if boundary_edges.size() >= 2:
+		return _get_edge_corner_bitmask(boundary_edges)
+
+	return bitmask
+
+func _get_edge_corner_bitmask(boundary_edges: Array) -> int:
+	var has_top := boundary_edges.has(0)
+	var has_right := boundary_edges.has(1)
+	var has_bottom := boundary_edges.has(2)
+	var has_left := boundary_edges.has(3)
+
+	if has_top and has_left: return TileLibrary.TL
+	if has_top and has_right: return TileLibrary.TR
+	if has_bottom and has_right: return TileLibrary.BR
+	if has_bottom and has_left: return TileLibrary.BL
+
+	return TileLibrary.TL
+
 func _build_debug_grid() -> void:
 	var mesh_instance := MeshInstance3D.new()
 	add_child(mesh_instance)
@@ -137,30 +189,24 @@ func _build_debug_grid() -> void:
 	material.albedo_color = Color.BLACK
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	immediate_mesh.surface_begin(Mesh.PRIMITIVE_LINES, material)
-	for coord in world.patches.keys():
-		var grid: StalbergGrid = world.patches[coord]
-		for quad in grid.quads:
-			for e in range(4):
-				var a: Vector3 = grid.points[quad[e]]
-				var b: Vector3 = grid.points[quad[(e + 1) % 4]]
-				immediate_mesh.surface_add_vertex(a + Vector3(0, 0.05, 0))
-				immediate_mesh.surface_add_vertex(b + Vector3(0, 0.05, 0))
+	for quad in grid.quads:
+		for e in range(4):
+			var a: Vector3 = grid.points[quad[e]]
+			var b: Vector3 = grid.points[quad[(e + 1) % 4]]
+			immediate_mesh.surface_add_vertex(a + Vector3(0, 0.05, 0))
+			immediate_mesh.surface_add_vertex(b + Vector3(0, 0.05, 0))
 	immediate_mesh.surface_end()
 	mesh_instance.mesh = immediate_mesh
 
-func _find_nearest_point(world_pos: Vector3) -> Dictionary:
-	var best_coord: Vector2i
+func _find_nearest_point(world_pos: Vector3) -> int:
 	var best_id := -1
 	var best_dist := INF
-	for coord in world.patches.keys():
-		var grid: StalbergGrid = world.patches[coord]
-		for id in grid.points.keys():
-			var d: float = grid.points[id].distance_squared_to(world_pos)
-			if d < best_dist:
-				best_dist = d
-				best_id = id
-				best_coord = coord
-	return {"coord": best_coord, "id": best_id}
+	for id in grid.points.keys():
+		var d: float = grid.points[id].distance_squared_to(world_pos)
+		if d < best_dist:
+			best_dist = d
+			best_id = id
+	return best_id
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventMouseButton and event.pressed):
@@ -176,17 +222,29 @@ func _unhandled_input(event: InputEvent) -> void:
 	var hit = ground.intersects_ray(from, dir)
 	if hit == null:
 		return
-	var found := _find_nearest_point(hit)
-	if found["id"] == -1:
+	var point_id := _find_nearest_point(hit)
+	if point_id == -1:
 		return
-	
-	var value := "Forest" if event.button_index == MOUSE_BUTTON_LEFT else "water"
 
-	for member_key in world.get_group_members(found["coord"], found["id"]):
-		var parts: PackedStringArray = member_key.split(":")
-		var coord_parts: PackedStringArray = parts[0].split(",")
-		var member_coord := Vector2i(int(coord_parts[0]), int(coord_parts[1]))
-		var member_id := int(parts[1])
-		world.patches[member_coord].land[member_id] = value
-		for quad_index in _point_to_quads[member_coord].get(member_id, []):
-			_update_quad(member_coord, quad_index)
+	var value := "Forest" if event.button_index == MOUSE_BUTTON_LEFT else "water"
+	grid.land[point_id] = value
+	for quad_index in _point_to_quads.get(point_id, []):
+		_update_quad(quad_index)
+
+func _pick_guaranteed_seeds(patch_coords: Array, adjacency: Dictionary) -> Dictionary:
+	var shuffled: Array = patch_coords.duplicate()
+	shuffled.shuffle()
+	var forced: Dictionary = {}
+	for biome in GUARANTEED_BIOMES:
+		for coord in shuffled:
+			if forced.has(coord):
+				continue
+			var compatible := true
+			for neighbor in adjacency.get(coord, []):
+				if forced.has(neighbor) and not WFC_RULES[forced[neighbor]].has(biome):
+					compatible = false
+					break
+			if compatible:
+				forced[coord] = biome
+				break
+	return forced

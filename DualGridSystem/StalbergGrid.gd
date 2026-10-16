@@ -7,6 +7,7 @@ var quads: Array = []         # Array[PackedInt32Array] (4 ids, CCW)
 var _next_id: int = 0
 
 var boundary_points: Dictionary = {}  # int id -> true, pinned during relax
+var boundary_edges: Dictionary = {}   # Vector2i edge key -> true
 var _edge_midpoints: Dictionary = {}  # Vector2i edge key -> midpoint id
 
 func generate(radius: int, cell_size: float, relax_iterations: int, relax_strength: float) -> void:
@@ -187,19 +188,40 @@ func _build_adjacency() -> Dictionary:
 
 func _compute_boundary_points() -> void:
 	boundary_points.clear()
+	boundary_edges.clear()
+
 	var edge_count: Dictionary = {}
+
 	for quad in quads:
 		for e in range(4):
 			var a: int = quad[e]
 			var b: int = quad[(e + 1) % 4]
+
 			var key := _edge_key(a, b)
+
 			edge_count[key] = edge_count.get(key, 0) + 1
+
 	for key in edge_count.keys():
 		if edge_count[key] == 1:
+			boundary_edges[key] = true
+
 			boundary_points[key.x] = true
 			boundary_points[key.y] = true
 			
-			
+func get_boundary_edges_for_quad(quad: PackedInt32Array) -> Array:
+	var result: Array = []
+
+	for e in range(4):
+		var a: int = quad[e]
+		var b: int = quad[(e + 1) % 4]
+
+		var key := _edge_key(a, b)
+
+		if boundary_edges.has(key):
+			result.append(e)
+
+	return result
+	
 func generate_unrelaxed(radius: int, cell_size: float) -> void:
 	points.clear()
 	land.clear()
